@@ -188,8 +188,25 @@ s = Set([1,2,3,4])
 filter!(isodd, s)
 @test isequal(s, Set([1,3]))
 
-
+########################################
 ## IntSet
+
+# Construction, collect
+data_in = (1,5,100)
+s = IntSet(data_in)
+data_out = collect(s)
+@test all(map(d->in(d,data_out), data_in))
+@test length(data_out) == length(data_in)
+
+# eltype, similar
+@test is(eltype(IntSet()), Int64)
+@test isequal(similar(IntSet([1,2,3])), IntSet())
+
+# show
+@test sprint(show, IntSet()) == "IntSet([])"
+@test sprint(show, IntSet([1,2,3])) == "IntSet([1, 2, 3])"
+@test contains(sprint(show, complement(IntSet())), "...,")
+
 
 s = IntSet([0,1,10,20,200,300,1000,10000,10002])
 @test last(s) == 10002
