@@ -46,29 +46,11 @@ each string into an object called an expression, represented by the Julia type
     julia> typeof(ex)
     Expr
 
-Expressions may also be constructed directly in
-`prefix notation <http://en.wikipedia.org/wiki/Polish_notation>`_:
-
-.. doctest::
-
-    julia> ex2 = Expr(:call, :+, 1, 1)
-    true
-
-The two expressions constructed above -- by parsing and by direct
-construction -- are equivalent:
-
-.. doctest::
-
-    julia> ex1 == ex2
-    true
-
-**The key point here is that Julia code is internally represented
-as a data structure that is accessible from the language itself.**
-
 :obj:`Expr` objects contain three parts:
 
-- a symbol identifying the action represented by the expression (see
-  below for more discussion of Symbols):
+- a ``Symbol`` identifying the kind of expression. A symbol is an
+`interned string <http://en.wikipedia.org/wiki/String_interning>`_ used as the basic
+building block of expressions:
 
 .. doctest::
 
@@ -92,6 +74,25 @@ as a data structure that is accessible from the language itself.**
 
     julia> ex1.typ
     Any
+
+Expressions may also be constructed directly in
+`prefix notation <http://en.wikipedia.org/wiki/Polish_notation>`_:
+
+.. doctest::
+
+    julia> ex2 = Expr(:call, :+, 1, 1)
+    true
+
+The two expressions constructed above -- by parsing and by direct
+construction -- are equivalent:
+
+.. doctest::
+
+    julia> ex1 == ex2
+    true
+
+**The key point here is that Julia code is internally represented
+as a data structure that is accessible from the language itself.**
 
 The :func:`dump` function provides indented and annotated display of :obj:`Expr`
 objects:
@@ -435,18 +436,10 @@ output:
     julia> eval(macroexpand( quote @sayhello("human") end ))
     Hello, human!
 
-So, why are macros even necessary? As a simplifying analogy, let's
-define ``The Full Julia Compiler`` as ``eval, but much faster``.
-We actually want to *avoid* calling the :func:`eval` directly in
-"real" code, because it will be exceptionally slow compared to using
-``The Full Julia Compiler``. But, if we are generating code, how
-how can execute our expression without calling :func:`eval`?
-
-The answer is macros.
-
-Macros are useful because they execute at when the code is parsed,
-not at the time it is run. Therefore, they allow the programmer to
-generate code *before* the full program is compiled and executed.
+So, why are macros even necessary? Macros are useful because they
+execute at when the code is parsed, not at the time it is run.
+Therefore, they allow the programmer to generate code *before* the
+full program is compiled and executed.
 
 Macro invocation
 ~~~~~~~~~~~~~~~~
@@ -473,6 +466,21 @@ expression arguments. Expanders are defined with the ``macro`` keyword::
         ...
         return resulting_expr
     end
+
+It is important to emphasize that macros receive their arguments as
+expressions, literals, or symbols. One way to explore macro arguments
+is to call the :func:`show` function within the macro body::
+
+    julia> macro showmacro(x)
+       show(x)
+       # ... remainder of macro, returning an expression
+    end
+
+
+    julia> @showarg (a, b, c)
+    :((a,b,c))
+
+Note that arguments are received as a *quoted* expression.
 
 Building an advanced macro
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
