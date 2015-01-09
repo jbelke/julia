@@ -268,3 +268,6 @@ const base64 = base64encode
 @deprecate beginswith startswith
 
 @deprecate functionlocs(f,t)  map(functionloc, methods(f,t))
+
+@deprecate error(ex::Exception) throw(ex)
+@deprecate error{E<:Exception}(::Type{E}) throw(E())
